@@ -8,7 +8,9 @@ chai.use(sinonChai);
 const { productService } = require('../../../src/services');
 const { productController } = require('../../../src/controllers');
 
-const { allProducts } = require('../models/mocks/products.model.mock');
+const { allProducts,
+    newProduct,
+    newInvalidProduct } = require('../models/mocks/products.model.mock');
 
 describe('Testes da camada controller de produto', () => {
     it('Testa se retorna status 200 e lista completa de produtos', async () => {
@@ -63,6 +65,25 @@ describe('Testes da camada controller de produto', () => {
         expect(res.json).to.have.been.calledWith({ message: 'Product not found' });
     });
     
+    it('Testa se ao enviar dados válidos cadastra novo produto corretamente', async () => {
+        const res = {};
+        const req = {
+            body: newProduct,
+        };
+
+        res.status = sinon.stub().returns(res);
+        res.json = sinon.stub().returns();
+
+        sinon
+            .stub(productService, 'addNewProduct')
+            .resolves({ type: null, message: newProduct });
+
+        await productController.addNewProduct(req, res);
+
+        expect(res.status).to.have.been.calledWith(201);
+        expect(res.json).to.have.been.calledWith(newProduct);
+    });
+
     afterEach(() => {
         sinon.restore();
     });

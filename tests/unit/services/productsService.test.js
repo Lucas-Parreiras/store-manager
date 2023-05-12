@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const { productService } = require('../../../src/services');
 const { productModel } = require('../../../src/models');
 
-const { allProducts } = require('../models/mocks/products.model.mock');
+const { allProducts, newProduct } = require('../models/mocks/products.model.mock');
 
 describe('Testando camada service de produtos', () => {
     it('Testa se recupera lista completa de produtos corretamente', async () => {
@@ -31,6 +31,16 @@ describe('Testando camada service de produtos', () => {
 
         expect(result.type).to.be.equal('NOT_FOUND');
         expect(result.message).to.be.equal('Product not found');
+    });
+
+    it('Testa se adicionar novo produto corretamente', async () => {
+        sinon.stub(productModel, 'addNewProduct').resolves(1);
+        sinon.stub(productModel, 'findProductById').resolves(allProducts[0]);
+
+        const result = await productService.addNewProduct(newProduct);
+
+        expect(result.type).to.be.equal(null);
+        expect(result.message).to.be.deep.equal(allProducts[0]);
     });
 
     afterEach(() => {
