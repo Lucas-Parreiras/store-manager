@@ -1,32 +1,24 @@
-const { salesProductsModel } = require('../models');
+const { salesProductsModel, productModel, salesModel } = require('../models');
 
 const registerNewProductSale = async (saleBody) => {
     const saleList = saleBody;
-    const quantityVerify = saleList.every((p) => p.quantity > 0);
-    if (quantityVerify === false) {
-        return {
-            type: 'INVALID_VALUE',
-            message: '"quantity" must be greater than or equal to 1',
-        };
+    const allProducts = await productModel.findAllProducts();
+    const idsValid = saleList
+        .every((p) => allProducts.some((ap) => p.productId === ap.id));
+    if (!idsValid) {
+        return { type: 'NOT_FOUND', message: 'Product not found' };
     }
-
-    const newArrTypes = saleBody.map(async (p) => {
-        const product = await salesProductsModel.findProductById(Number(p.productId));
-        const { type } = product;
-        return type;
-    });
-
-    const productIdValidation = newArrTypes.every((type) => type === null);
-
-    if (productIdValidation === false) {
-        return {
-            type: 'NOT_FOUND',
-            message: 'Product not found',
-        };
-    }
-
-    const saleLog = await salesProductsModel.registerProductsFromNewSale(saleBody);
-    return { type: null, message: saleLog };
+    const saleId = await salesModel.registerNewSale();
+    await Promise.all(
+        saleBody
+            .map((p) => salesProductsModel.registerProductsFromNewSale(p, saleId)),
+    );
+    return { type: null,
+        message: {
+            id: saleId,
+            itemsSold: saleBody,
+        },
+    };
 };
 
 module.exports = {

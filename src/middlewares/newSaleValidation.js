@@ -1,11 +1,13 @@
 const BAD_REQUEST = 400;
+const UNPROCESSABLE_ENTITY = 422;
+
+const notExist = (data) => data === null || data === undefined;
 
 function validateProductsIds(req, res, next) {
     const list = req.body;
-    const idsIsValid = list
-        .every((p) => p.hasOwnProperty('productId'));
+    const idsIsValid = list.find((p) => notExist(p.productId));
 
-    if (idsIsValid === false) {
+    if (idsIsValid) {
         return res.status(BAD_REQUEST)
             .json({ message: '"productId" is required' });
     }
@@ -15,12 +17,24 @@ function validateProductsIds(req, res, next) {
 
 function validateProductsQuantity(req, res, next) {
     const list = req.body;
-    const quantityIdValid = list
-        .every((p) => p.hasOwnProperty('quantity'));
+    const quantityIsValid = list.find((p) => notExist(p.quantity));
        
-    if (quantityIdValid === false) {
+    if (quantityIsValid) {
         return res.status(BAD_REQUEST)
             .json({ message: '"quantity" is required' });
+    }
+
+    return next();
+}
+
+function positiveQuantity(req, res, next) {
+    const list = req.body;
+    const positiveValid = list
+        .every((p) => Number(p.quantity) > 0);
+
+    if (positiveValid === false) {
+        return res.status(UNPROCESSABLE_ENTITY)
+            .json({ message: '"quantity" must be greater than or equal to 1' });
     }
 
     return next();
@@ -29,4 +43,5 @@ function validateProductsQuantity(req, res, next) {
 module.exports = {
     validateProductsIds,
     validateProductsQuantity,
+    positiveQuantity,
 };
