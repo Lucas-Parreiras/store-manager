@@ -5,12 +5,13 @@ const sinonChai = require('sinon-chai');
 const { expect } = chai;
 chai.use(sinonChai);
 
-const { productService } = require('../../../src/services');
-const { productController } = require('../../../src/controllers');
+const { productService, saleProductService } = require('../../../src/services');
+const { productController, salesController } = require('../../../src/controllers');
 
 const { allProducts,
     newProduct,
     newInvalidProduct } = require('../models/mocks/products.model.mock');
+const { newSale, rightReturnNew, newInvalidIdSale, allSales, saleId1 } = require('../models/mocks/sales.mock');
 
 describe('Testes da camada controller de produto', () => {
     it('Testa se retorna status 200 e lista completa de produtos', async () => {
@@ -82,6 +83,96 @@ describe('Testes da camada controller de produto', () => {
 
         expect(res.status).to.have.been.calledWith(201);
         expect(res.json).to.have.been.calledWith(newProduct);
+    });
+
+    afterEach(() => {
+        sinon.restore();
+    });
+});
+
+describe('Testes da camamada controller de vendas', () => {
+    it('Testa se passado corpo corretamente retorna status e mensagem correta', async () => {
+        const res = {};
+        const req = {
+            body: newSale,
+        };
+
+        res.status = sinon.stub().returns(res);
+        res.json = sinon.stub().returns();
+
+        sinon.stub(saleProductService, 'registerNewProductSale')
+            .resolves({
+                type: null,
+                message: rightReturnNew,
+            });
+
+        await salesController.registerNewSale(req, res);
+
+        expect(res.status).to.have.been.calledWith(201);
+        expect(res.json).to.have.been.calledWith(rightReturnNew);
+    });
+
+    it('Testa se fornecido corpo de venda com id de produto inexistente retorna erro', async () => {
+        const res = {};
+        const req = {
+            body: newInvalidIdSale,
+        };
+
+        res.status = sinon.stub().returns(res);
+        res.json = sinon.stub().returns();
+
+        sinon.stub(saleProductService, 'registerNewProductSale')
+            .resolves({
+                type: 'NOT_FOUND',
+                message: 'Product not found',
+            });
+
+        await salesController.registerNewSale(req, res);
+
+        expect(res.status).to.have.been.calledWith(404);
+        expect(res.json).to.have.been.calledWith({ message: 'Product not found' });
+    });
+
+    it('Testa se retorna corretamente listagem de todas as vendas', async () => {
+        const res = {};
+        const req = {};
+
+        res.status = sinon.stub().returns(res);
+        res.json = sinon.stub().returns();
+
+        sinon.stub(saleProductService, 'getAllSales')
+            .resolves({
+                type: null,
+                message: allSales,
+            });
+
+        await salesController.getAllSales(req, res);
+
+        expect(res.status).to.have.been.calledWith(200);
+        expect(res.json).to.have.been.calledWith(allSales);
+    });
+
+    it('Testa se recupera venda corretamente quando procurado por id', async () => {
+        const res = {};
+        const req = {
+            params: {
+                id: 1,
+            },
+        };
+
+        res.status = sinon.stub().returns(res);
+        res.json = sinon.stub().returns();
+
+        sinon.stub(saleProductService, 'saleById')
+            .resolves({
+                type: null,
+                message: saleId1,
+            });
+
+        await salesController.saleById(req, res);
+
+        expect(res.status).to.have.been.calledWith(200);
+        expect(res.json).to.have.been.calledWith(saleId1);
     });
 
     afterEach(() => {
