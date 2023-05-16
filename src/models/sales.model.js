@@ -1,5 +1,5 @@
-const connection = require('../db/connection');
 const camelize = require('camelize');
+const connection = require('../db/connection');
 
 const registerNewSale = async () => {
     const [{ insertId }] = await connection.execute(
