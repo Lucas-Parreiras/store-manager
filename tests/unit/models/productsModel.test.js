@@ -34,3 +34,13 @@ describe('Testes da camada model de produtos', () => {
         sinon.restore();
     });
 });
+
+describe('Testes da camada model de vendas', () => {
+    it('Testa se adiciona nova venda corretamente', async () => {
+        
+    });
+
+    afterEach(() => {
+        sinon.restore();
+    });
+});

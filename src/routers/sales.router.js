@@ -9,6 +9,10 @@ const {
 
 const router = express.Router();
 
+router.get('/:id', salesController.saleById);
+
+router.get('/', salesController.getAllSales);
+
 router.post(
     '/',
     validateProductsIds,
