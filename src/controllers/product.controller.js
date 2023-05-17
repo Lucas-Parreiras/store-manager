@@ -1,5 +1,6 @@
 const OK = 200;
 const CREATED = 201;
+const DELETED = 204;
 const NOT_FOUND = 404;
 
 const { productService } = require('../services');
@@ -36,9 +37,19 @@ const updateProductById = async (req, res) => {
     return res.status(OK).json(message);
 };
 
+const deleteProductById = async (req, res) => {
+    const id = Number(req.params.id);
+    const { type, message } = await productService.deleteProductById(id);
+    if (type === 'NOT_FOUND') {
+        return res.status(NOT_FOUND).json({ message });
+    }
+    return res.status(DELETED).end();
+};
+
 module.exports = {
     listProducts,
     productById,
     addNewProduct,
     updateProductById,
+    deleteProductById,
 };
