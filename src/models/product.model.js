@@ -41,10 +41,19 @@ const deleteProductById = async (id) => {
     );
 };
 
+const searchProduct = async (q) => {
+    const [products] = await connection.execute(
+        'SELECT * FROM StoreManager.products WHERE name LIKE ?;',
+        [`%${q}%`],
+    );
+    return camelize(products);
+};
+
 module.exports = {
     findAllProducts,
     findProductById,
     addNewProduct,
     updateProductById,
     deleteProductById,
+    searchProduct,
 };
