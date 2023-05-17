@@ -175,6 +175,29 @@ describe('Testes da camamada controller de vendas', () => {
         expect(res.json).to.have.been.calledWith(saleId1);
     });
 
+    it('Testa se deleta uma venda corretamente', async () => {
+        const res = {};
+        const req = {
+            params: {
+                id: 1,
+            },
+        };
+
+        res.status = sinon.stub().returns(res);
+        res.end = sinon.stub();
+
+        sinon.stub(saleProductService, 'deleteSaleById')
+            .resolves({
+                type: null,
+                message: 'Deleted',
+            });
+
+        await salesController.deleteSaleById(req, res);
+
+        expect(res.status).to.have.been.calledWith(204);
+        expect(res.end).to.have.been.called;
+    });
+
     afterEach(() => {
         sinon.restore();
     });

@@ -9,14 +9,6 @@ const registerNewSale = async () => {
     return insertId;
 };
 
-const getSale = async (id) => {
-    const selectedSale = await connection.execute(
-        'SELECT * FROM StoreManager.sales WHERE id = ?',
-        [id],
-    );
-    return camelize(selectedSale);
-};
-
 const getAllSales = async () => {
     const allSales = await connection.execute(
         `SELECT sale_id, date, product_id, quantity FROM
@@ -59,5 +51,4 @@ module.exports = {
     getAllSales,
     getSaleById,
     deleteSaleById,
-    getSale,
 };

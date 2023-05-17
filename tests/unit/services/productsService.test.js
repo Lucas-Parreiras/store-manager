@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 const { productService, saleProductService } = require('../../../src/services');
-const { productModel } = require('../../../src/models');
+const { productModel, salesModel, salesProductsModel } = require('../../../src/models');
 
 const { allProducts, newProduct } = require('../models/mocks/products.model.mock');
 const { allSales, saleId1, newSale, newInvalidIdSale, rightReturnNew } = require('../models/mocks/sales.mock');
@@ -51,10 +51,7 @@ describe('Testando camada service de produtos', () => {
 
 describe('Testes da camada service de vendas', () => {
     it('Testa se recupera a lista completa de vendas corretamete', async () => {
-        sinon.stub(saleProductService, 'getAllSales').resolves({
-            type: null,
-            message: allSales,
-        });
+        sinon.stub(salesModel, 'getAllSales').resolves([allSales]);
 
         const result = await saleProductService.getAllSales();
 
@@ -63,10 +60,7 @@ describe('Testes da camada service de vendas', () => {
     });
 
     it('Testa se recupera venda por id corretamente', async () => {
-        sinon.stub(saleProductService, 'saleById').resolves({
-            type: null,
-            message: saleId1,
-        });
+        sinon.stub(salesModel, 'getSaleById').resolves([saleId1]);
 
         const result = await saleProductService.saleById(1);
 
@@ -75,10 +69,7 @@ describe('Testes da camada service de vendas', () => {
     });
 
     it('Testa se retorna erro caso procurado uma venda com id inexistente', async () => {
-        sinon.stub(saleProductService, 'saleById').resolves({
-            type: 'NOT_FOUND',
-            message: 'Sale not found',
-        })
+        sinon.stub(salesModel, 'getSaleById').resolves([]);
 
         const result = await saleProductService.saleById(9);
 
@@ -87,13 +78,7 @@ describe('Testes da camada service de vendas', () => {
     });
 
     it('Testa se cadastra nova venda corretamente', async () => {
-        sinon.stub(saleProductService, 'registerNewProductSale').resolves({
-            type: null,
-            message: {
-                id: 3,
-                itemsSold: newSale,
-            },
-        });
+        sinon.stub(salesProductsModel, 'registerProductsFromNewSale').resolves();
 
         const result = await saleProductService.registerNewProductSale(newSale);
 
@@ -102,15 +87,36 @@ describe('Testes da camada service de vendas', () => {
     });
 
     it('Testa se retorna erro caso seja passado um id de produto inexistente', async () => {
-        sinon.stub(saleProductService, 'registerNewProductSale').resolves({
-            type: 'NOT_FOUND',
-            message: 'Product not found',
-        });
+        sinon.stub(productModel, 'findAllProducts').resolves([allProducts]);
 
         const result = await saleProductService.registerNewProductSale(newInvalidIdSale);
 
         expect(result.type).to.be.equal('NOT_FOUND');
         expect(result.message).to.be.equal('Product not found');
+    });
+
+    it('Testa se deleta venda corretamente', async () => {
+        sinon.stub(saleProductService, 'deleteSaleById').resolves({
+            type: null,
+            message: 'Deleted',
+        });
+
+        const result = await saleProductService.deleteSaleById(1);
+
+        expect(result.type).to.be.equal(null);
+        expect(result.message).to.be.equal('Deleted');
+    });
+
+    it('Testa se retorna erro ao tentar deletar uma venda com id inexistente', async () => {
+        sinon.stub(saleProductService, 'deleteSaleById').resolves({
+            type: 'NOT_FOUND',
+            message: 'Sale not found',
+        });
+
+        const result = await saleProductService.deleteSaleById(8);
+
+        expect(result.type).to.be.equal('NOT_FOUND');
+        expect(result.message).to.be.equal('Sale not found');
     });
 
     afterEach(() => {
